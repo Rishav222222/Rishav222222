@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Weather Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #map {
+            width: 100%;
+            height: 400px;
+            margin-top: 20px;
+        }
+        #weather {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Dynamic Weather Application</h1>
+<button onclick="getGeolocation()">Fetch Data</button>
+
+<iframe id="map" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+
+<div id="weather">
+    <h3>Weather Details</h3>
+    <div id="current-weather"></div>
+</div>
+
+<script>
+    // Geolocation function
+    function getGeolocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition, showError);
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+
+    function showPosition(position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        displayMap(latitude, longitude);
+        fetchWeatherData(latitude, longitude);
+    }
+
+    function showError(error) {
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                alert("User denied the request for Geolocation.");
+                break;
+            case error.POSITION_UNAVAILABLE:
+                alert("Location information is unavailable.");
+                break;
+            case error.TIMEOUT:
+                alert("The request to get user location timed out.");
+                break;
+            case error.UNKNOWN_ERROR:
+                alert("An unknown error occurred.");
+                break;
+        }
+    }
+
+    // Map function
+    function displayMap(latitude, longitude) {
+        const mapIframe = document.getElementById('map');
+        mapIframe.src = `https://www.google.com/maps/embed/v1/view?key=YOUR_GOOGLE_MAPS_API_KEY&center=${latitude},${longitude}&zoom=14&maptype=satellite`;
+    }
+
+    // Weather function
+    function fetchWeatherData(latitude, longitude) {
+        const apiKey = 'YOUR_OPENWEATHERMAP_API_KEY';
+        const apiUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${latitude}&lon=${longitude}&exclude=minutely,hourly,alerts&units=metric&appid=${apiKey}`;
+        
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => displayWeatherData(data))
+            .catch(error => console.error('Error fetching weather data:', error));
+    }
+
+    function displayWeatherData(data) {
+        const weatherDiv = document.getElementById('current-weather');
+        const weatherInfo = `
+            <p>Temperature: ${data.current.temp} °C</p>
+            <p>Weather: ${data.current.weather[0].description}</p>
+            <p>Humidity: ${data.current.humidity}%</p>
+            <p>Wind Speed: ${data.current.wind_speed} m/s</p>
+        `;
+        weatherDiv.innerHTML = weatherInfo;
+    }
+</script>
+
+</body>
+</html>
